@@ -2,6 +2,7 @@ import heapq
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.animation as animation
 
 def line_of_sight(grid, start, end):
     """Checks if there's a line of sight between two points on the grid."""
@@ -24,16 +25,19 @@ def line_of_sight(grid, start, end):
     
     return grid[y1][x1] == 0
 
-def theta_star(grid, start, goal):
-    """Theta* pathfinding algorithm on a 2D grid."""
+def theta_star(grid, start, goal, steps):
+    """Theta* pathfinding algorithm with animation support."""
     rows, cols = len(grid), len(grid[0])
-    open_set = []  # Min-heap priority queue
+    open_set = []
     heapq.heappush(open_set, (0, start))
     g_cost = {start: 0}
     parent = {start: None}
+    explored = []
     
     while open_set:
         _, current = heapq.heappop(open_set)
+        explored.append(current)
+        steps.append((explored.copy(), parent.copy()))
         
         if current == goal:
             path = []
@@ -59,18 +63,21 @@ def theta_star(grid, start, goal):
                 
                 heapq.heappush(open_set, (g_cost[neighbor] + math.dist(neighbor, goal), neighbor))
     
-    return None  # No path found
+    return None  
 
-def a_star(grid, start, goal):
-    """A* pathfinding algorithm on a 2D grid."""
+def a_star(grid, start, goal, steps):
+    """A* pathfinding algorithm with animation support."""
     rows, cols = len(grid), len(grid[0])
-    open_set = []  # Min-heap priority queue
+    open_set = []
     heapq.heappush(open_set, (0, start))
     g_cost = {start: 0}
     parent = {start: None}
+    explored = []
     
     while open_set:
         _, current = heapq.heappop(open_set)
+        explored.append(current)
+        steps.append((explored.copy(), parent.copy()))
         
         if current == goal:
             path = []
@@ -79,7 +86,7 @@ def a_star(grid, start, goal):
                 current = parent[current]
             return path[::-1]
         
-        for dx, dy in [(0, -1), (-1, 0), (0, 1), (1, 0)]:  # Only 4-directional movement
+        for dx, dy in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
             neighbor = (current[0] + dx, current[1] + dy)
             if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols and grid[neighbor[0]][neighbor[1]] == 0:
                 new_g = g_cost[current] + 1
@@ -92,17 +99,26 @@ def a_star(grid, start, goal):
                 
                 heapq.heappush(open_set, (g_cost[neighbor] + math.dist(neighbor, goal), neighbor))
     
-    return None  # No path found
+    return None
 
-def plot_grid(grid, path, title, color="red"):
-    """Visualize the grid, obstacles, and path."""
+def animate_pathfinding(grid, steps):
+    """Animates the pathfinding process."""
+    fig, ax = plt.subplots()
     grid = np.array(grid)
-    plt.imshow(grid, cmap="Greys", origin="upper")
-    if path:
-        x, y = zip(*path)
-        plt.plot(y, x, marker="o", color=color)
-    plt.title(title)
-    plt.grid(True)
+    ax.imshow(grid, cmap="Greys", origin="upper")
+    
+    def update(frame):
+        ax.clear()
+        ax.imshow(grid, cmap="Greys", origin="upper")
+        
+        explored, parent = steps[frame]
+        for (x, y) in explored:
+            ax.plot(y, x, "ro", markersize=3)
+        for node, p in parent.items():
+            if p is not None:
+                ax.plot([p[1], node[1]], [p[0], node[0]], "orange", linewidth=1)
+    
+    ani = animation.FuncAnimation(fig, update, frames=len(steps), repeat=False, interval=400)
     plt.show()
 
 # Example usage:
@@ -115,9 +131,11 @@ grid = [
 ]
 start = (0, 0)
 goal = (4, 4)
-path_theta = theta_star(grid, start, goal)
-path_a_star = a_star(grid, start, goal)
-print("Theta* Path:", path_theta)
-print("A* Path:", path_a_star)
-plot_grid(grid, path_theta, "Theta* Path", color="blue")
-plot_grid(grid, path_a_star, "A* Path", color="red")
+
+steps_theta = []
+path_theta = theta_star(grid, start, goal, steps_theta)
+animate_pathfinding(grid, steps_theta)
+
+steps_a_star = []
+path_a_star = a_star(grid, start, goal, steps_a_star)
+animate_pathfinding(grid, steps_a_star)
