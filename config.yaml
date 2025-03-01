@@ -1,5 +1,5 @@
 algorithm: "theta_star"  # Options: "a_star", "theta_star"
-grid_size:
+grid_size: # XXX Grid must be square! Fix!
   x: 13
   y: 13
 obstacles: 50  # Number of obstacles to add randomly
