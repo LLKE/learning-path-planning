@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-from theta_a_star import theta_star, a_star
+import yaml
+from a_star import a_star
+from theta_star import theta_star
 
 def animate_pathfinding(grid, steps, start, goal):
     """Animates the pathfinding process with start and goal markers."""
@@ -47,25 +49,33 @@ def animate_pathfinding(grid, steps, start, goal):
     plt.show()
 
 if __name__ == "__main__":
-    dim_x = 13
-    dim_y = 13
+    # Load configuration from YAML file
+    with open("config.yaml", "r", encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+    
+    algorithm = config["algorithm"]
+    dim_x = config["grid_size"]["x"]
+    dim_y = config["grid_size"]["y"]
+    num_obstacles = config["obstacles"]
+
     grid = np.zeros((dim_x, dim_y), dtype=int)
 
     # Add obstacles randomly
     gridx, gridy = grid.shape
     np.random.seed(42)
-    for _ in range(50):
+    for _ in range(num_obstacles):
         x, y = np.random.randint(0, gridx), np.random.randint(0, gridy)
         grid[x, y] = 1
 
     start = (0, 0)
     goal = (dim_x - 1, dim_y - 1)
 
-    steps_theta = []
-    path_theta = theta_star(grid, start, goal, steps_theta)
-    
-    animate_pathfinding(grid, steps_theta, start, goal)
+    steps = []
+    if algorithm == "theta_star":
+        path = theta_star(grid, start, goal, steps)
+    elif algorithm == "a_star":
+        path = a_star(grid, start, goal, steps)
+    else:
+        raise ValueError("Unknown algorithm specified in config.yaml")
 
-    steps_a_star = []
-    path_a_star = a_star(grid, start, goal, steps_a_star)
-    animate_pathfinding(grid, steps_a_star, start, goal)
+    animate_pathfinding(grid, steps, start, goal)
