@@ -1,0 +1,5 @@
+algorithm: "theta_star"  # Options: "a_star", "theta_star"
+grid_size:
+  x: 13
+  y: 13
+obstacles: 50  # Number of obstacles to add randomly
