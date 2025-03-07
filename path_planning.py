@@ -14,6 +14,18 @@ if __name__ == "__main__":
     dim_x = config["grid_size"]["x"]
     dim_y = config["grid_size"]["y"]
     num_obstacles = config["obstacles"]
+    start = tuple(config["start"])
+    goal = tuple(config["goal"])
+
+    # Check if the map size values are feasible
+    if dim_x <= 0 or dim_y <= 0:
+        raise ValueError("Grid size must be greater than 0.")
+    if num_obstacles >= dim_x * dim_y:
+        raise ValueError("Number of obstacles must be less than the total number of grid cells.")
+    if not (0 <= start[0] < dim_x and 0 <= start[1] < dim_y):
+        raise ValueError("Start coordinates must be within the grid.")
+    if not (0 <= goal[0] < dim_x and 0 <= goal[1] < dim_y):
+        raise ValueError("Goal coordinates must be within the grid.")
 
     grid = np.zeros((dim_x, dim_y), dtype=int)
 
@@ -24,8 +36,9 @@ if __name__ == "__main__":
         x, y = np.random.randint(0, gridx), np.random.randint(0, gridy)
         grid[x, y] = 1
 
-    start = (0, 0)
-    goal = (dim_x - 1, dim_y - 1)
+    # Ensure start and goal points are not blocked
+    grid[start[0], start[1]] = 0
+    grid[goal[0], goal[1]] = 0
 
     steps = []
     if algorithm == "theta_star":
