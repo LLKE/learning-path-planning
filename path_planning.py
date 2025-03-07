@@ -6,7 +6,7 @@ from a_star import a_star
 from theta_star import theta_star
 from hybrid_a_star import hybrid_a_star
 
-def animate_pathfinding(grid, steps, start, goal):
+def animate_pathfinding(grid, steps, start, goal, path_found):
     """Animates the pathfinding process with start and goal markers."""
     fig, ax = plt.subplots()
     grid = np.array(grid)
@@ -38,6 +38,9 @@ def animate_pathfinding(grid, steps, start, goal):
                     p = parent[node]
                     ax.plot([p[1], node[1]], [p[0], node[0]], "green", linewidth=1)
                     node = p
+            else:
+                # Display "No path found" text in a box
+                ax.text(0.5, 0.5, "No path found", ha="center", va="center", transform=ax.transAxes, fontsize=20, color='red', bbox=dict(facecolor='white', alpha=0.9, edgecolor='red'))
         else:
             # Plot the explored nodes in orange
             for node, p in parent.items():
@@ -81,4 +84,5 @@ if __name__ == "__main__":
     else:
         raise ValueError("Unknown algorithm specified in config.yaml")
 
-    animate_pathfinding(grid, steps, start, goal)
+    path_found = path is not None
+    animate_pathfinding(grid, steps, start, goal, path_found)
