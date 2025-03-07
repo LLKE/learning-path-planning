@@ -51,4 +51,4 @@ if __name__ == "__main__":
         raise ValueError("Unknown algorithm specified in config.yaml")
 
     path_found = path is not None
-    animate_pathfinding(grid, steps, start, goal, path_found)
+    animate_pathfinding(grid, steps, start, goal)

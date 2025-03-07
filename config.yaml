@@ -1,7 +1,7 @@
 algorithm: "hybrid_a_star"  # Options: "a_star", "theta_star", "hybrid_a_star"
 grid_size:
-  x: 14
-  y: 14
+  x: 13
+  y: 13
 obstacles: 50  # Number of obstacles to add randomly
 start: [0, 0]  # Start coordinates
 goal: [12, 12]  # Goal coordinates
