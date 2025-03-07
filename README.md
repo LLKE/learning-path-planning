@@ -33,7 +33,7 @@ techniques as I go.
 
 2. Install the required packages:
     ```sh
-    pip install numpy matplotlib pyyaml
+    pip install -r requirements.txt
     ```
 
 ## Configuration
