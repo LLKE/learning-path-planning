@@ -4,6 +4,7 @@ import matplotlib.animation as animation
 import yaml
 from a_star import a_star
 from theta_star import theta_star
+from hybrid_a_star import hybrid_a_star
 
 def animate_pathfinding(grid, steps, start, goal):
     """Animates the pathfinding process with start and goal markers."""
@@ -75,6 +76,8 @@ if __name__ == "__main__":
         path = theta_star(grid, start, goal, steps)
     elif algorithm == "a_star":
         path = a_star(grid, start, goal, steps)
+    elif algorithm == "hybrid_a_star":
+        path = hybrid_a_star(grid, start, goal, steps)
     else:
         raise ValueError("Unknown algorithm specified in config.yaml")
 

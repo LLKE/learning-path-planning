@@ -1,4 +1,4 @@
-algorithm: "theta_star"  # Options: "a_star", "theta_star"
+algorithm: "hybrid_a_star"  # Options: "a_star", "theta_star", "hybrid_a_star"
 grid_size: # XXX Grid must be square! Fix!
   x: 13
   y: 13
