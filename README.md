@@ -67,9 +67,7 @@ The script will load the configuration, generate a grid with obstacles, and run 
 
 ## Files
 
-- `a_star.py`: Implementation of the A* algorithm.
-- `theta_star.py`: Implementation of the Theta* algorithm.
-- `hybrid_a_star.py`: Implementation of the Hybrid A* algorithm.
+- `graph_based/`: Implementation of the graph-based algorithms.
 - `animation.py`: Module for animating the pathfinding process.
 - `path_planning.py`: Main script to run the pathfinding algorithms and visualize the results.
 - `config.yaml`: Configuration file for specifying algorithm parameters.
