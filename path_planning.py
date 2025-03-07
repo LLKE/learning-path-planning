@@ -1,8 +1,8 @@
 import numpy as np
 import yaml
-from a_star import a_star
-from theta_star import theta_star
-from hybrid_a_star import hybrid_a_star
+from graph_based.a_star import a_star
+from graph_based.theta_star import theta_star
+from graph_based.hybrid_a_star import hybrid_a_star
 from animation import animate_pathfinding
 
 if __name__ == "__main__":
