@@ -1,6 +1,8 @@
 # Learning Path Planning
 
-![Repository Thumbnail](media/thumbnail.png)
+<p align="center">
+  <img src="media/thumbnail.png" alt="Repository Thumbnail" width="300"/>
+</p>
 
 This repository contains implementations of various pathfinding algorithms, so far including A*, Theta*, and Hybrid A*. These algorithms are used to find the shortest path between a start and a goal point, considering obstacles. The repository also includes an animation module to visualize the pathfinding process.
 
