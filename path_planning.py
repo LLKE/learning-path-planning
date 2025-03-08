@@ -1,6 +1,5 @@
 import time
 import numpy as np
-import yaml
 import streamlit as st
 import matplotlib.pyplot as plt
 from graph_based.a_star import a_star
@@ -9,21 +8,17 @@ from graph_based.hybrid_a_star import hybrid_a_star
 from animation import animate_pathfinding
 
 def main():
-    st.title("Path Planning Visualization")
-
-    # Load configuration from YAML file
-    with open("config.yaml", "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+    st.title("Path Planning")
 
     # Sidebar inputs
     algorithm = st.sidebar.selectbox("Select Algorithm", ["a_star", "theta_star", "hybrid_a_star"])
-    dim_x = st.sidebar.number_input("Grid Size X", min_value=1, value=config["grid_size"]["x"])
-    dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, value=config["grid_size"]["y"])
-    num_obstacles = st.sidebar.number_input("Number of Obstacles", min_value=0, value=config["obstacles"])
-    start_x = st.sidebar.number_input("Start X", min_value=0, max_value=dim_x-1, value=config["start"][0])
-    start_y = st.sidebar.number_input("Start Y", min_value=0, max_value=dim_y-1, value=config["start"][1])
-    goal_x = st.sidebar.number_input("Goal X", min_value=0, max_value=dim_x-1, value=config["goal"][0])
-    goal_y = st.sidebar.number_input("Goal Y", min_value=0, max_value=dim_y-1, value=config["goal"][1])
+    dim_x = st.sidebar.number_input("Grid Size X", min_value=1, value=10)
+    dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, value=10)
+    num_obstacles = st.sidebar.number_input("Number of Obstacles", min_value=0, value=20)
+    start_x = st.sidebar.number_input("Start X", min_value=0, max_value=dim_x-1, value=0)
+    start_y = st.sidebar.number_input("Start Y", min_value=0, max_value=dim_y-1, value=0)
+    goal_x = st.sidebar.number_input("Goal X", min_value=0, max_value=dim_x-1, value=dim_x-1)
+    goal_y = st.sidebar.number_input("Goal Y", min_value=0, max_value=dim_y-1, value=dim_y-1)
 
     start = (start_x, start_y)
     goal = (goal_x, goal_y)
