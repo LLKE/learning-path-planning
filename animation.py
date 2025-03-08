@@ -1,7 +1,4 @@
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.animation as animation
-import time
 
 def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False):
     """Animates the pathfinding process with start and goal markers."""

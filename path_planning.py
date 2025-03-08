@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import yaml
 import streamlit as st
@@ -6,7 +7,6 @@ from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
 from animation import animate_pathfinding
-import time
 
 def main():
     st.title("Path Planning Visualization")
