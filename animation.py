@@ -18,7 +18,8 @@ def animate_pathfinding(grid, steps, start, goal):
 
     def update(frame):
         ax.clear()
-        animate_pathfinding(grid, steps[frame], start, goal, ax)
+        is_last_step = (frame == len(steps) - 1)
+        animate_pathfinding(grid, steps[frame], start, goal, ax, is_last_step)
         
         elapsed_time = time.time() - start_time
         clock_text.set_text(f'Time elapsed: {elapsed_time:.2f} seconds')
@@ -27,7 +28,7 @@ def animate_pathfinding(grid, steps, start, goal):
     anim = animation.FuncAnimation(fig, update, frames=len(steps), repeat=False, interval=200)
     return anim
 
-def animate_pathfinding(grid, step, start, goal, ax):
+def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False):
     """Animates the pathfinding process with start and goal markers."""
     grid = np.array(grid)
     ax.imshow(grid, cmap="Greys", origin="upper")
@@ -51,7 +52,7 @@ def animate_pathfinding(grid, step, start, goal, ax):
             p = parent[node]
             ax.plot([p[1], node[1]], [p[0], node[0]], "green", linewidth=1)
             node = p
-    else:
+    elif is_last_step:
         ax.text(0.5, 0.5, "No path found", ha="center", va="center", transform=ax.transAxes, fontsize=20, color='red', bbox=dict(facecolor='white', alpha=0.9, edgecolor='red'))
     
     ax.legend()

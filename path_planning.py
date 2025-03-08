@@ -70,9 +70,10 @@ def main():
 
     if st.sidebar.button("Start Animation"):
         placeholder = st.empty()
-        for step in steps:
+        for i, step in enumerate(steps):
             fig, ax = plt.subplots()
-            animate_pathfinding(grid, step, start, goal, ax)
+            is_last_step = (i == len(steps) - 1)
+            animate_pathfinding(grid, step, start, goal, ax, is_last_step)
             placeholder.pyplot(fig)
             plt.close(fig)
             time.sleep(0.2)  # Adjust the sleep time to control the animation speed
