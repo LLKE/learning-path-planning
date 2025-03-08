@@ -18,39 +18,40 @@ def animate_pathfinding(grid, steps, start, goal):
 
     def update(frame):
         ax.clear()
-        ax.imshow(grid, cmap="Greys", origin="upper")
-        ax.set_xticks(np.arange(0, grid.shape[1], 1))
-        ax.set_yticks(np.arange(0, grid.shape[0], 1))
-        ax.grid(which="major", color="black", linestyle='-', linewidth=0.5)
-        ax.tick_params(which="both", bottom=False, left=False, labelbottom=False, labelleft=False)
-        
-        ax.plot(start[1], start[0], "go", markersize=6, label="Start")
-        ax.plot(goal[1], goal[0], "bo", markersize=6, label="Goal")
-        
-        explored, parent = steps[frame]
-        for (x, y) in explored:
-            ax.plot(y, x, "ro", markersize=3)
-        if frame == len(steps) - 1:
-            # Plot the final path in green
-            if goal in parent:
-                node = goal
-                while node != start:
-                    p = parent[node]
-                    ax.plot([p[1], node[1]], [p[0], node[0]], "green", linewidth=1)
-                    node = p
-            else:
-                # Display "No path found" text in a box
-                ax.text(0.5, 0.5, "No path found", ha="center", va="center", transform=ax.transAxes, fontsize=20, color='red', bbox=dict(facecolor='white', alpha=0.9, edgecolor='red'))
-        else:
-            # Plot the explored nodes in orange
-            for node, p in parent.items():
-                if p is not None:
-                    ax.plot([p[1], node[1]], [p[0], node[0]], "orange", linewidth=1)
+        animate_pathfinding(grid, steps[frame], start, goal, ax)
         
         elapsed_time = time.time() - start_time
         clock_text.set_text(f'Time elapsed: {elapsed_time:.2f} seconds')
         ax.add_artist(clock_text)  # Ensure the clock text is added to the plot
-        ax.legend()
     
-    ani = animation.FuncAnimation(fig, update, frames=len(steps), repeat=False, interval=200)
-    plt.show()
+    anim = animation.FuncAnimation(fig, update, frames=len(steps), repeat=False, interval=200)
+    return anim
+
+def animate_pathfinding(grid, step, start, goal, ax):
+    """Animates the pathfinding process with start and goal markers."""
+    grid = np.array(grid)
+    ax.imshow(grid, cmap="Greys", origin="upper")
+    ax.set_xticks(np.arange(0, grid.shape[1], 1))
+    ax.set_yticks(np.arange(0, grid.shape[0], 1))
+    ax.grid(which="major", color="black", linestyle='-', linewidth=0.5)  
+    ax.tick_params(which="both", bottom=False, left=False, labelbottom=False, labelleft=False)
+    
+    ax.plot(start[1], start[0], "go", markersize=6, label="Start")
+    ax.plot(goal[1], goal[0], "bo", markersize=6, label="Goal")
+    
+    explored, parent = step
+    for (x, y) in explored:
+        ax.plot(y, x, "ro", markersize=3)
+    for node, p in parent.items():
+        if p is not None:
+            ax.plot([p[1], node[1]], [p[0], node[0]], "orange", linewidth=1)
+    if goal in parent:
+        node = goal
+        while node != start:
+            p = parent[node]
+            ax.plot([p[1], node[1]], [p[0], node[0]], "green", linewidth=1)
+            node = p
+    else:
+        ax.text(0.5, 0.5, "No path found", ha="center", va="center", transform=ax.transAxes, fontsize=20, color='red', bbox=dict(facecolor='white', alpha=0.9, edgecolor='red'))
+    
+    ax.legend()
