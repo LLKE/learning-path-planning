@@ -51,7 +51,7 @@ def main():
     grid[goal[0], goal[1]] = 0
 
     steps = []
-    if algorithm == "Theta *":
+    if algorithm == "Theta*":
         path = theta_star(grid, start, goal, steps)
     elif algorithm == "A*":
         path = a_star(grid, start, goal, steps)
