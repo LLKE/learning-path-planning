@@ -10,7 +10,7 @@ def line_of_sight(grid, start, end):
     err = dx - dy
     
     while (x0, y0) != (x1, y1):
-        if grid[y0][x0] == 1:
+        if grid[x0][y0] == 1:
             return False
         e2 = 2 * err
         if e2 > -dy:
@@ -20,7 +20,7 @@ def line_of_sight(grid, start, end):
             err += dx
             y0 += sy
     
-    return grid[y1][y1] == 0
+    return grid[x1][y1] == 0
 
 
 def theta_star(grid, start, goal, steps):

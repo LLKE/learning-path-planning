@@ -1,38 +1,37 @@
-# Learning Path Planning
-
-<p align="center">
-  <img src="media/thumbnail.png" alt="Repository Thumbnail" width="300"/>
-</p>
+# Path Planning Visualization
 
 This repository contains implementations of various pathfinding algorithms, so far including A*, Theta*, and Hybrid A*. These algorithms are used to find the shortest path between a start and a goal point, considering obstacles. The repository also includes an animation module to visualize the pathfinding process.
 
-I created this repo to learn about path planning, maybe you can also learn a little something from it 😊 
+I created this repo to learn about path planning, maybe you can also learn a little something from it 😊
 
 If there are any algorithms you would like to see me implement, let me know! I have a roadmap of what algorithms I will do next, but I don't have the best overview of the algorithms out there, so I might miss some important ones!
 
-## Algorithms Implemented
+The tool uses Streamlit to create an interactive web application that allows users to visualize the execution of different path planning algorithms on a grid with obstacles.
 
-This is an ever-growing repository. Right now, I am exploring grid-based path planning algorithms and plan to expand to further 
-techniques as I go.
+## Features
 
-### Grid-Based 
-- **A***: A classic pathfinding algorithm that uses a heuristic to find the shortest path.
-- **Theta***: An extension of A* that allows for any-angle pathfinding.
-- **Hybrid A***: A pathfinding algorithm that considers vehicle kinematic constraints for smoother paths.
+- **Interactive Inputs**: Users can configure the grid size, number of obstacles, start and goal positions directly in the Streamlit app.
+- **Visualization**: Step-by-step visualization of the pathfinding process, including explored nodes and the final path.
+
+## Algorithms:
+- **Grid Based** 
+  - A*
+  - Theta*
+  - Hybrid A*
 
 ## Requirements
 
-- Python 3.x
+- Python 3.7 or higher
+- Streamlit
 - NumPy
 - Matplotlib
-- PyYAML
 
 ## Installation
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/learning-path-planning.git
-    cd learning-path-planning
+    git clone https://github.com/yourusername/path-planning-visualization.git
+    cd path-planning-visualization
     ```
 
 2. Install the required packages:
@@ -40,37 +39,30 @@ techniques as I go.
     pip install -r requirements.txt
     ```
 
-## Configuration
-
-The configuration for the pathfinding algorithms is stored in `config.yaml`. You can specify the algorithm to use, grid size, number of obstacles, and start and goal coordinates.
-
-Example `config.yaml`:
-```yaml
-algorithm: "hybrid_a_star"  # Options: "a_star", "theta_star", "hybrid_a_star"
-grid_size:
-  x: 13
-  y: 13
-obstacles: 50  # Number of obstacles to add randomly
-start: [0, 0]  # Start coordinates
-goal: [12, 12]  # Goal coordinates
-```
-
 ## Usage
 
-1. Ensure the configuration file `config.yaml` is set up as desired.
-2. Run the path planning script:
+1. Run the Streamlit app:
     ```sh
-    python path_planning.py
+    streamlit run path_planning.py
     ```
 
-The script will load the configuration, generate a grid with obstacles, and run the specified pathfinding algorithm. The pathfinding process will be animated, showing the exploration and the final path (if found).
+2. Open your web browser and navigate to the URL provided by Streamlit (usually `http://localhost:8501`).
+
+3. Configure the grid size, number of obstacles, start and goal positions, and select the path planning algorithm from the sidebar.
+
+4. Click the "Start Animation" button to visualize the pathfinding process.
 
 ## Files
 
-- `graph_based/`: Implementation of the graph-based algorithms.
-- `animation.py`: Module for animating the pathfinding process.
-- `path_planning.py`: Main script to run the pathfinding algorithms and visualize the results.
-- `config.yaml`: Configuration file for specifying algorithm parameters.
+- `path_planning.py`: The main script that sets up the Streamlit app and handles user inputs.
+- `animation.py`: Contains the function to animate the pathfinding process.
+- `graph_based/a_star.py`: Implementation of the A* algorithm.
+- `graph_based/theta_star.py`: Implementation of the Theta* algorithm.
+- `graph_based/hybrid_a_star.py`: Implementation of the Hybrid A* algorithm.
+
+## Contributing
+
+Contributions are welcome! If you have any suggestions, bug reports, or feature requests, please open an issue or submit a pull request. Thanks!
 
 ## License
 
