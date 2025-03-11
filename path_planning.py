@@ -65,6 +65,7 @@ def main():
 
     if st.sidebar.button("Start Animation"):
         placeholder = st.empty()
+        step_counter = st.empty()
         with st.expander("Algorithm Description"):
             st.markdown(descriptions[algorithm])
         for i, step in enumerate(steps):
@@ -72,6 +73,7 @@ def main():
             is_last_step = (i == len(steps) - 1)
             animate_pathfinding(grid, step, start, goal, ax, is_last_step)
             placeholder.pyplot(fig)
+            step_counter.markdown(f"**Step: {i + 1}**")
             plt.close(fig)
             time.sleep(animation_speed)  # Use the selected animation speed
 
