@@ -11,7 +11,7 @@ def main():
     st.title("Path Planning")
 
     # Sidebar inputs
-    algorithm = st.sidebar.selectbox("Select Algorithm", ["a_star", "theta_star", "hybrid_a_star"])
+    algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
     dim_x = st.sidebar.number_input("Grid Size X", min_value=1, value=10)
     dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, value=10)
     num_obstacles = st.sidebar.number_input("Number of Obstacles", min_value=0, value=20)
@@ -51,17 +51,15 @@ def main():
     grid[goal[0], goal[1]] = 0
 
     steps = []
-    if algorithm == "theta_star":
+    if algorithm == "Theta *":
         path = theta_star(grid, start, goal, steps)
-    elif algorithm == "a_star":
+    elif algorithm == "A*":
         path = a_star(grid, start, goal, steps)
-    elif algorithm == "hybrid_a_star":
+    elif algorithm == "Hybrid A*":
         path = hybrid_a_star(grid, start, goal, steps)
     else:
         st.error("Unknown algorithm specified.")
         return
-
-    path_found = path is not None
 
     if st.sidebar.button("Start Animation"):
         placeholder = st.empty()

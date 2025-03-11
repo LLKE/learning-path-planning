@@ -54,7 +54,7 @@ def get_neighbors(node, parent):
             angle_diff = abs(math.degrees(neighbor_direction - parent_direction))
             if angle_diff > 180:
                 angle_diff = 360 - angle_diff  # Adjust for wrap-around angles
-            if angle_diff <= 25:
+            if angle_diff <= 45:
                 neighbors.append((x + dx, y + dy))
     else:
         for dx, dy in directions:
@@ -71,14 +71,18 @@ def line_of_sight(grid, start, end):
     err = dx - dy
     
     while (x0, y0) != (x1, y1):
-        if grid[y0][x0] == 1:
+        if grid[x0][y0] == 1:
             return False
         e2 = 2 * err
+
+        # Move horizontally
         if e2 > -dy:
             err -= dy
             x0 += sx
+
+        # Move vertically
         if e2 < dx:
             err += dx
             y0 += sy
     
-    return grid[y1][y1] == 0
+    return grid[x1][y1] == 0
