@@ -6,6 +6,7 @@ from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
 from animation import animate_pathfinding
+from algorithm_descriptions import descriptions
 
 def main():
     st.title("Path Planning")
@@ -63,6 +64,8 @@ def main():
 
     if st.sidebar.button("Start Animation"):
         placeholder = st.empty()
+        with st.expander("Algorithm Description"):
+            st.markdown(descriptions[algorithm])
         for i, step in enumerate(steps):
             fig, ax = plt.subplots()
             is_last_step = (i == len(steps) - 1)
