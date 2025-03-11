@@ -20,6 +20,7 @@ def main():
     start_y = st.sidebar.number_input("Start Y", min_value=0, max_value=dim_y-1, value=0)
     goal_x = st.sidebar.number_input("Goal X", min_value=0, max_value=dim_x-1, value=dim_x-1)
     goal_y = st.sidebar.number_input("Goal Y", min_value=0, max_value=dim_y-1, value=dim_y-1)
+    animation_speed = st.sidebar.slider("Animation Speed (seconds per frame)", min_value=0.1, max_value=1.0, value=0.2, step=0.1)
 
     start = (start_x, start_y)
     goal = (goal_x, goal_y)
@@ -72,7 +73,7 @@ def main():
             animate_pathfinding(grid, step, start, goal, ax, is_last_step)
             placeholder.pyplot(fig)
             plt.close(fig)
-            time.sleep(0.2)  # Adjust the sleep time to control the animation speed
+            time.sleep(animation_speed)  # Use the selected animation speed
 
 if __name__ == "__main__":
     main()
