@@ -13,8 +13,8 @@ def main():
 
     # Sidebar inputs
     algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
-    dim_x = st.sidebar.number_input("Grid Size X", min_value=1, value=10)
-    dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, value=10)
+    dim_x = st.sidebar.number_input("Grid Size X", min_value=1, max_value=25, value=10)
+    dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, max_value=25, value=10)
     num_obstacles = st.sidebar.number_input("Number of Obstacles", min_value=0, value=20)
     start_x = st.sidebar.number_input("Start X", min_value=0, max_value=dim_x-1, value=0)
     start_y = st.sidebar.number_input("Start Y", min_value=0, max_value=dim_y-1, value=0)
