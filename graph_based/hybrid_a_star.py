@@ -5,6 +5,9 @@ from scipy.interpolate import CubicSpline
 
 def hybrid_a_star(grid, start, goal, steps):
     """Hybrid A* pathfinding algorithm with basic kinematic constraints."""
+    ## Note: This implementation still uses a grid based graph traversal
+    ## This is not technically real Hybrid A*. Implementation ongoing :)
+
     rows, cols = len(grid), len(grid[0])
     open_set = []
     heapq.heappush(open_set, (0, start))
