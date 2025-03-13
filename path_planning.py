@@ -71,7 +71,7 @@ def main():
         for i, step in enumerate(steps):
             fig, ax = plt.subplots()
             is_last_step = (i == len(steps) - 1)
-            animate_pathfinding(grid, step, start, goal, ax, is_last_step)
+            animate_pathfinding(grid, step, start, goal, ax, is_last_step, path)
             placeholder.pyplot(fig)
             step_counter.markdown(f"**Step: {i + 1}**")
             plt.close(fig)

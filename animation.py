@@ -1,6 +1,6 @@
 import numpy as np
 
-def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False):
+def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False, path=None):
     """Animates the pathfinding process with start and goal markers."""
     grid = np.array(grid)
     ax.imshow(grid, cmap="Greys", origin="upper")
@@ -18,12 +18,9 @@ def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False):
     for node, p in parent.items():
         if p is not None:
             ax.plot([p[1], node[1]], [p[0], node[0]], "orange", linewidth=1)
-    if goal in parent:
-        node = goal
-        while node != start:
-            p = parent[node]
-            ax.plot([p[1], node[1]], [p[0], node[0]], "green", linewidth=1)
-            node = p
+    if is_last_step and path:
+        for i in range(len(path) - 1):
+            ax.plot([path[i][1], path[i + 1][1]], [path[i][0], path[i + 1][0]], "green", linewidth=1)
     elif is_last_step:
         ax.text(0.5, 0.5, "No path found", ha="center", va="center", transform=ax.transAxes, fontsize=20, color='red', bbox=dict(facecolor='white', alpha=0.9, edgecolor='red'))
     

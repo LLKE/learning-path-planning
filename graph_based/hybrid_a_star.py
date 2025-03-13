@@ -1,8 +1,10 @@
 import heapq
 import math
+import numpy as np
+from scipy.interpolate import CubicSpline
 
 def hybrid_a_star(grid, start, goal, steps):
-    """Hybrid A* pathfinding algorithm with animation support."""
+    """Hybrid A* pathfinding algorithm with basic kinematic constraints."""
     rows, cols = len(grid), len(grid[0])
     open_set = []
     heapq.heappush(open_set, (0, start))
@@ -20,7 +22,7 @@ def hybrid_a_star(grid, start, goal, steps):
             while current:
                 path.append(current)
                 current = parent[current]
-            return path[::-1]
+            return smooth_path(path[::-1])
         
         for neighbor in get_neighbors(current, parent[current]):
             if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols and grid[neighbor[0]][neighbor[1]] == 0:
@@ -54,7 +56,7 @@ def get_neighbors(node, parent):
             angle_diff = abs(math.degrees(neighbor_direction - parent_direction))
             if angle_diff > 180:
                 angle_diff = 360 - angle_diff  # Adjust for wrap-around angles
-            if angle_diff <= 45:
+            if angle_diff <= 45:  # Basic constraint for max 45 degrees turn
                 neighbors.append((x + dx, y + dy))
     else:
         for dx, dy in directions:
@@ -68,21 +70,34 @@ def line_of_sight(grid, start, end):
     x1, y1 = end
     dx, dy = abs(x1 - x0), abs(y1 - y0)
     sx, sy = (1 if x1 > x0 else -1), (1 if y1 > y0 else -1)
-    err = dx - dy
+    error = dx - dy
     
     while (x0, y0) != (x1, y1):
         if grid[x0][y0] == 1:
             return False
-        e2 = 2 * err
-
-        # Move horizontally
+        e2 = 2 * error
         if e2 > -dy:
-            err -= dy
+            error -= dy
             x0 += sx
-
-        # Move vertically
         if e2 < dx:
-            err += dx
+            error += dx
             y0 += sy
     
     return grid[x1][y1] == 0
+
+def smooth_path(path):
+    """Smooth the path using cubic splines."""
+    if len(path) < 3:
+        return path
+    
+    x = [point[0] for point in path]
+    y = [point[1] for point in path]
+    
+    cs_x = CubicSpline(range(len(x)), x)
+    cs_y = CubicSpline(range(len(y)), y)
+    
+    # Generate more points along the spline
+    t_new = np.linspace(0, len(x) - 1, num=len(x) * 10)
+    smoothed_path = [(cs_x(t), cs_y(t)) for t in t_new]
+    
+    return smoothed_path
