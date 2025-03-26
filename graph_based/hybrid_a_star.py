@@ -1,7 +1,6 @@
 import heapq
 import math
 import numpy as np
-from scipy.interpolate import CubicSpline
 
 def hybrid_a_star(grid, start, goal, steps):
     """Hybrid A* pathfinding algorithm with basic kinematic constraints."""
@@ -25,7 +24,7 @@ def hybrid_a_star(grid, start, goal, steps):
             while current:
                 path.append(current)
                 current = parent[current]
-            return smooth_path(path[::-1])
+            return path[::-1]
         
         for neighbor in get_neighbors(current, parent[current]):
             if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols and grid[neighbor[0]][neighbor[1]] == 0:
@@ -87,20 +86,3 @@ def line_of_sight(grid, start, end):
             y0 += sy
     
     return grid[x1][y1] == 0
-
-def smooth_path(path):
-    """Smooth the path using cubic splines."""
-    if len(path) < 3:
-        return path
-    
-    x = [point[0] for point in path]
-    y = [point[1] for point in path]
-    
-    cs_x = CubicSpline(range(len(x)), x)
-    cs_y = CubicSpline(range(len(y)), y)
-    
-    # Generate more points along the spline
-    t_new = np.linspace(0, len(x) - 1, num=len(x) * 10)
-    smoothed_path = [(cs_x(t), cs_y(t)) for t in t_new]
-    
-    return smoothed_path
