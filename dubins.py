@@ -322,7 +322,9 @@ class DubinsPath:
             "LSL": self.lsl_path(),
             "LSR": self.lsr_path(),
             "RSL": self.rsl_path(),
-            "RSR": self.rsr_path()
+            "RSR": self.rsr_path(),
+            "LRL": self.lrl_path(),
+            "RLR": self.rlr_path()
         }
 
         paths = {key: path for key, path in paths.items() if path is not None}

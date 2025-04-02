@@ -31,6 +31,10 @@ def main():
     turning_radius = None
     if algorithm == "Hybrid A*":
         turning_radius = st.sidebar.slider("Turning Radius (degrees)", min_value=0, max_value=45, value=15, step=1)
+        turning_radius = np.deg2rad(turning_radius)  # Convert turning radius to radians
+        if not st.sidebar.button("Confirm Turning Radius"):
+            st.warning("Please confirm the turning radius before starting the animation.")
+            return
 
     start = (start_x, start_y)
     goal = (goal_x, goal_y)

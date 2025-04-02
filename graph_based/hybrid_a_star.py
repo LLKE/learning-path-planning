@@ -3,15 +3,19 @@ import heapq
 from dubins import DubinsPath  # Assuming DubinsPath is in a separate file
 
 def heuristic(node, goal, turning_radius):
-    dubins = DubinsPath(node, goal, turning_radius)
-    path = dubins.compute_shortest_path()
-    return path[1]['length'] if path else np.linalg.norm(np.array(goal[:2]) - np.array(node[:2]))
+    """Heuristic function using Euclidean distance."""
+    return np.linalg.norm(np.array(goal[:2]) - np.array(node[:2]))
 
 def is_valid(node, grid):
     x, y, _ = node
     if x < 0 or x >= grid.shape[0] or y < 0 or y >= grid.shape[1]:
         return False
     return grid[int(x), int(y)] == 0
+
+def snap_to_grid(node):
+    """Snap a point to the nearest grid cell. Discretizes map to avoid infinite number of nodes to check"""
+    x, y, theta = node
+    return (round(x), round(y), theta)
 
 def get_neighbors(node, turning_radius):
     x, y, theta = node
@@ -23,10 +27,10 @@ def get_neighbors(node, turning_radius):
         new_theta = theta + delta * delta_theta
         new_x = x + step_size * np.cos(new_theta)
         new_y = y + step_size * np.sin(new_theta)
-        neighbors.append((float(new_x), float(new_y), float(new_theta)))  # Ensure standard Python floats
+        neighbors.append(snap_to_grid((new_x, new_y, new_theta)))  # Snap neighbors to the grid
     
     return neighbors
-
+    
 def reconstruct_path(came_from, current):
     path = [current]
     while current in came_from:
@@ -36,6 +40,10 @@ def reconstruct_path(came_from, current):
     return path
 
 def hybrid_a_star(grid, start, goal, turning_radius, steps):
+    # Snap start and goal to the nearest grid cell
+    start = snap_to_grid(start)
+    goal = snap_to_grid(goal)
+
     open_set = []
     heapq.heappush(open_set, (0, start))
     came_from = {}
@@ -48,12 +56,14 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
         explored.append(current)
         steps.append((explored.copy(), came_from.copy()))
         
-        if np.linalg.norm(np.array(current[:2]) - np.array(goal[:2])) < turning_radius:
+        # Check if the current cell is the goal cell (relaxing theta condition)
+        if current[:2] == goal[:2]:  # Compare only x and y coordinates
             return reconstruct_path(came_from, current)
         
         for neighbor in get_neighbors(current, turning_radius):
             if not is_valid(neighbor, grid):
                 continue
+            
             tentative_g_score = g_score[current] + np.linalg.norm(np.array(current[:2]) - np.array(neighbor[:2]))
             
             if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
