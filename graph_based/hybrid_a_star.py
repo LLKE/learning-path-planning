@@ -1,6 +1,7 @@
 import numpy as np
 import heapq
 from dubins import DubinsPath  # Assuming DubinsPath is in a separate file
+import pdb
 
 def heuristic(node, goal, turning_radius):
     """Heuristic function using Euclidean distance."""
@@ -23,6 +24,7 @@ def get_neighbors(node, turning_radius):
     step_size = turning_radius / 2
     neighbors = []
     
+    #XXX It looks like the node itself is considered a neighbor as well, which can cause loops
     for delta in [-1, 0, 1]:
         new_theta = theta + delta * delta_theta
         new_x = x + step_size * np.cos(new_theta)
@@ -41,6 +43,7 @@ def reconstruct_path(came_from, current):
 
 def hybrid_a_star(grid, start, goal, turning_radius, steps):
     # Snap start and goal to the nearest grid cell
+    pdb.set_trace()
     start = snap_to_grid(start)
     goal = snap_to_grid(goal)
 
