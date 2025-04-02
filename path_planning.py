@@ -11,8 +11,8 @@ from algorithm_descriptions import descriptions
 def main():
     st.title("Path Planning")
 
-    # Sidebar inputs
-    algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
+    # Sidebar: Grid-specific settings
+    st.sidebar.header("Grid Settings")
     dim_x = st.sidebar.number_input("Grid Size X", min_value=1, max_value=25, value=10)
     dim_y = st.sidebar.number_input("Grid Size Y", min_value=1, max_value=25, value=10)
     num_obstacles = st.sidebar.number_input("Number of Obstacles", min_value=0, value=20)
@@ -20,7 +20,17 @@ def main():
     start_y = st.sidebar.number_input("Start Y", min_value=0, max_value=dim_y-1, value=0)
     goal_x = st.sidebar.number_input("Goal X", min_value=0, max_value=dim_x-1, value=dim_x-1)
     goal_y = st.sidebar.number_input("Goal Y", min_value=0, max_value=dim_y-1, value=dim_y-1)
+
+    # Sidebar: Animation-specific settings
+    st.sidebar.header("Animation Settings")
     animation_speed = st.sidebar.slider("Animation Speed (seconds per frame)", min_value=0.1, max_value=1.0, value=0.2, step=0.1)
+
+    # Sidebar: Vehicle-specific settings
+    st.sidebar.header("Vehicle Settings")
+    algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
+    turning_radius = None
+    if algorithm == "Hybrid A*":
+        turning_radius = st.sidebar.slider("Turning Radius (degrees)", min_value=0, max_value=45, value=15, step=1)
 
     start = (start_x, start_y)
     goal = (goal_x, goal_y)
@@ -58,7 +68,9 @@ def main():
     elif algorithm == "A*":
         path = a_star(grid, start, goal, steps)
     elif algorithm == "Hybrid A*":
-        path = hybrid_a_star(grid, start, goal, steps)
+        start = (start[0], start[1], 0)  # Append orientation to start
+        goal = (goal[0], goal[1], 0)    # Append orientation to goal
+        path = hybrid_a_star(grid, start, goal, turning_radius, steps)
     else:
         st.error("Unknown algorithm specified.")
         return
