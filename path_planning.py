@@ -28,12 +28,11 @@ def main():
     # Sidebar: Vehicle-specific settings
     st.sidebar.header("Vehicle Settings")
     algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
-    turning_radius = None
+    max_turning_angle = None
     if algorithm == "Hybrid A*":
-        turning_radius = st.sidebar.slider("Turning Radius (degrees)", min_value=0, max_value=45, value=15, step=1)
-        turning_radius = np.deg2rad(turning_radius)  # Convert turning radius to radians
-        if not st.sidebar.button("Confirm Turning Radius"):
-            st.warning("Please confirm the turning radius before starting the animation.")
+        max_turning_angle = st.sidebar.slider("Max Turning Angle (degrees)", min_value=1, max_value=45, value=15, step=1)
+        if not st.sidebar.button("Confirm Turning Angle"):
+            st.warning("Please confirm the turning angle before starting the animation.")
             return
 
     start = (start_x, start_y)
@@ -74,24 +73,24 @@ def main():
     elif algorithm == "Hybrid A*":
         start = (start[0], start[1], 0)  # Append orientation to start
         goal = (goal[0], goal[1], 0)    # Append orientation to goal
-        path = hybrid_a_star(grid, start, goal, turning_radius, steps)
+        path = hybrid_a_star(grid, start, goal, max_turning_angle, steps)
     else:
         st.error("Unknown algorithm specified.")
         return
 
-    if st.sidebar.button("Start Animation"):
-        placeholder = st.empty()
-        step_counter = st.empty()
-        with st.expander("Algorithm Description"):
-            st.markdown(descriptions[algorithm])
-        for i, step in enumerate(steps):
-            fig, ax = plt.subplots()
-            is_last_step = (i == len(steps) - 1)
-            animate_pathfinding(grid, step, start, goal, ax, is_last_step, path)
-            placeholder.pyplot(fig)
-            step_counter.markdown(f"**Step: {i + 1}**")
-            plt.close(fig)
-            time.sleep(animation_speed)  # Use the selected animation speed
+    #if st.sidebar.button("Start Animation"):
+    placeholder = st.empty()
+    step_counter = st.empty()
+    with st.expander("Algorithm Description"):
+        st.markdown(descriptions[algorithm])
+    for i, step in enumerate(steps):
+        fig, ax = plt.subplots()
+        is_last_step = (i == len(steps) - 1)
+        animate_pathfinding(grid, step, start, goal, ax, is_last_step, path)
+        placeholder.pyplot(fig)
+        step_counter.markdown(f"**Step: {i + 1}**")
+        plt.close(fig)
+        time.sleep(animation_speed)  # Use the selected animation speed
 
 if __name__ == "__main__":
     main()

@@ -13,7 +13,14 @@ def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False, path=No
     ax.plot(goal[1], goal[0], "bo", markersize=6, label="Goal")
     
     explored, parent = step
-    for (x, y) in explored:
+
+    # Remove theta if algorithm works in SO(2)
+    if len(explored) > 0 and len(explored[0]) == 3:
+        explored_2d = [(x, y) for x, y, _ in explored]
+    else:
+        explored_2d = explored 
+
+    for (x, y) in explored_2d:
         ax.plot(y, x, "ro", markersize=3)
     for node, p in parent.items():
         if p is not None:
