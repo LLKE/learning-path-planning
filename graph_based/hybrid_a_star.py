@@ -58,6 +58,27 @@ def reconstruct_path(came_from, current):
     path.reverse()
     return path
 
+def reconstruct_path_with_dubins(came_from, current, turning_radius):
+
+    # Reconstruct the path as a sequence of nodes
+    path = [current]
+    while current in came_from:
+        current = came_from[current]
+        path.append(current)
+    path.reverse()
+
+    # Convert the path into Dubins paths
+    dubins_path = []
+    for i in range(len(path) - 1):
+        start = path[i]
+        end = path[i + 1]
+        dubins = DubinsPath(start, end, turning_radius)
+        shortest_path = dubins.compute_shortest_path()
+        if shortest_path:
+            dubins_path.extend(shortest_path["segments"])  # Add the Dubins path segments
+
+    return dubins_path
+
 def is_on_path(goal, current, neighbor):
     """
     Check if the goal lies on the line segment between current and neighbor.
