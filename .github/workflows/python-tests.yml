@@ -4,17 +4,13 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python-version: [3.9, 3.10, 3.11]
+    runs-on: ubuntu-lates
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.11
