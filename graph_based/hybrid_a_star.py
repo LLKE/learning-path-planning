@@ -48,6 +48,7 @@ def get_neighbors(node, max_turning_angle, v=1.0, delta_t=1.0):
         neighbor = snap_to_grid((new_x, new_y, new_theta))
         if neighbor != node:  # Avoid adding the current node as its own neighbor
             neighbors.append(neighbor)
+            
     return neighbors
     
 def reconstruct_path(came_from, current):
