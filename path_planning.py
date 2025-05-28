@@ -28,11 +28,11 @@ def main():
     # Sidebar: Vehicle-specific settings
     st.sidebar.header("Vehicle Settings")
     algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
-    max_turning_angle = None
+    turning_radius = None
     if algorithm == "Hybrid A*":
-        max_turning_angle = st.sidebar.slider("Max Turning Angle (degrees)", min_value=1, max_value=45, value=15, step=1)
-        if not st.sidebar.button("Confirm Turning Angle"):
-            st.warning("Please confirm the turning angle before starting the animation.")
+        turning_radius = st.sidebar.slider("Max Turning Radius (meters)", min_value=1, max_value=45, value=15, step=1)
+        if not st.sidebar.button("Confirm Turning Radius"):
+            st.warning("Please confirm the turning radius before starting the animation.")
             return
 
     start = (start_x, start_y)
@@ -73,7 +73,7 @@ def main():
     elif algorithm == "Hybrid A*":
         start = (start[0], start[1], 0)  # Append orientation to start
         goal = (goal[0], goal[1], 0)    # Append orientation to goal
-        path = hybrid_a_star(grid, start, goal, max_turning_angle, steps)
+        path = hybrid_a_star(grid, start, goal, turning_radius, steps)
     else:
         st.error("Unknown algorithm specified.")
         return

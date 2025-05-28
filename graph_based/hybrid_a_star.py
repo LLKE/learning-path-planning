@@ -4,7 +4,7 @@ from dubins import DubinsPath
 import math
 import pdb
 
-def heuristic(node, goal, max_turning_angle):
+def heuristic(node, goal, turning_radius):
     """Heuristic function using Euclidean distance."""
     return np.linalg.norm(np.array(goal[:2]) - np.array(node[:2]))
 
@@ -24,16 +24,13 @@ def snap_to_grid(node):
     rounded_theta = round(theta / (math.pi/8)) * (math.pi/8)
     return (rounded_x, rounded_y, rounded_theta)
 
-def get_neighbors(node, max_turning_angle, v=1.0, delta_t=1.0):
+def get_neighbors(node, turning_radius, v=1.0, delta_t=1.0):
 
     x, y, theta = node
     neighbors = []
 
-    # Convert max turning angle to radians
-    max_steering_angle = math.radians(max_turning_angle)
-
     # Define possible steering angles (left, straight, right)
-    steering_angles = [-max_steering_angle, 0, max_steering_angle]
+    steering_angles = [math.atan2(1, turning_radius), 0, -math.atan2(1, turning_radius)]
 
     for steering_angle in steering_angles:
         # Compute the change in orientation (dθ/dt = ω)
@@ -100,7 +97,7 @@ def is_on_path(goal, current, neighbor):
 
     return False
 
-def hybrid_a_star(grid, start, goal, max_turning_angle, steps):
+def hybrid_a_star(grid, start, goal, turning_radius, steps):
     # Snap start and goal to the nearest grid cell
     start = snap_to_grid(start)
     goal = snap_to_grid(goal)
@@ -109,7 +106,7 @@ def hybrid_a_star(grid, start, goal, max_turning_angle, steps):
     heapq.heappush(open_set, (0, start))
     came_from = {}
     g_score = {start: 0}
-    f_score = {start: heuristic(start, goal, max_turning_angle)}
+    f_score = {start: heuristic(start, goal, turning_radius)}
     explored = []
     #pdb.set_trace()
     while open_set:
@@ -121,7 +118,7 @@ def hybrid_a_star(grid, start, goal, max_turning_angle, steps):
         if math.isclose(current[0], goal[0], rel_tol=1e-9) and math.isclose(current[1], goal[1], rel_tol=1e-9):  # Compare only x and y coordinates
             return reconstruct_path(came_from, current)
         
-        for neighbor in get_neighbors(current, max_turning_angle):
+        for neighbor in get_neighbors(current, turning_radius):
             if (is_on_path(goal, current, neighbor)):
                 explored.append(goal)
                 came_from[goal] = current
@@ -136,7 +133,7 @@ def hybrid_a_star(grid, start, goal, max_turning_angle, steps):
             if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal, max_turning_angle)
+                f_score[neighbor] = tentative_g_score + heuristic(neighbor, goal, turning_radius)
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
     
     return None  # No path found
