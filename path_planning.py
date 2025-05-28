@@ -30,7 +30,7 @@ def main():
     algorithm = st.sidebar.selectbox("Select Algorithm", ["A*", "Theta*", "Hybrid A*"])
     turning_radius = None
     if algorithm == "Hybrid A*":
-        turning_radius = st.sidebar.slider("Max Turning Radius (meters)", min_value=1, max_value=45, value=15, step=1)
+        turning_radius = st.sidebar.slider("Max Turning Radius (meters)", min_value=1.0, max_value=4.0, value=1.0, step=0.5)
         if not st.sidebar.button("Confirm Turning Radius"):
             st.warning("Please confirm the turning radius before starting the animation.")
             return
