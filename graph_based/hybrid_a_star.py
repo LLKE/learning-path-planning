@@ -97,6 +97,39 @@ def is_on_path(goal, current, neighbor):
 
     return False
 
+def is_goal_in_wedge(current, neighbors, goal, max_distance=1.0):
+    
+    x0, y0 = current[:2]
+    xg, yg = goal[:2]
+
+    if np.linalg.norm([xg - x0, yg - y0]) > max_distance:
+        return False
+    
+    # Angles to neighbors
+    neighbor_angles = [math.atan2(n[1] - y0, n[0] - x0) for n in neighbors]
+
+    if len(neighbor_angles) < 2:
+        return False
+    
+    left_angle = min(neighbor_angles)
+    right_angle = max(neighbor_angles)
+
+    # Angle to goal
+    goal_angle = math.atan2(yg - y0, xg - x0)
+
+    # Normalize angles to [0, 2pi)
+    def norm_angle(a): return (a + 2 * math.pi) % (2 * math.pi)
+    left_angle = norm_angle(left_angle)
+    right_angle = norm_angle(right_angle)
+    goal_angle = norm_angle(goal_angle)
+
+    # Handle wedge crossing 0 radians
+    if left_angle > right_angle:
+        return goal_angle >= left_angle or goal_angle <= right_angle
+    else:
+        return left_angle <= goal_angle <= right_angle
+    
+    
 def hybrid_a_star(grid, start, goal, turning_radius, steps):
     # Snap start and goal to the nearest grid cell
     start = snap_to_grid(start)
@@ -118,13 +151,15 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
         if math.isclose(current[0], goal[0], rel_tol=1e-9) and math.isclose(current[1], goal[1], rel_tol=1e-9):  # Compare only x and y coordinates
             return reconstruct_path(came_from, current)
         
+        neighbors = get_neighbors(current, turning_radius)
+        # Check if goal is in the wedge between leftmost and rightmost neighbor
+        if is_goal_in_wedge(current, neighbors, goal):
+            explored.append(goal)
+            came_from[goal] = current
+            steps.append((explored.copy(), came_from.copy()))
+            return reconstruct_path(came_from, goal)
+        
         for neighbor in get_neighbors(current, turning_radius):
-            if (is_on_path(goal, current, neighbor)):
-                explored.append(goal)
-                came_from[goal] = current
-                steps.append((explored.copy(), came_from.copy()))
-                return reconstruct_path(came_from, goal)
-
             if not is_valid(neighbor, grid):
                 continue
             
