@@ -2,6 +2,7 @@ import time
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
+import tracemalloc
 from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
@@ -9,6 +10,9 @@ from animation import animate_pathfinding
 from algorithm_descriptions import descriptions
 
 def main():
+
+    tracemalloc.start()
+
     st.title("Path Planning")
 
     # Sidebar: Grid-specific settings
@@ -92,5 +96,9 @@ def main():
         plt.close(fig)
         time.sleep(animation_speed)  # Use the selected animation speed
 
+    _, peak = tracemalloc.get_traced_memory()
+    print(f"Peak memory usage: {peak / 1024:.2f} KB")
+    tracemalloc.stop()
+    
 if __name__ == "__main__":
     main()

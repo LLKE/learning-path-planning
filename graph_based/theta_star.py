@@ -34,8 +34,10 @@ def theta_star(grid, start, goal, steps):
     
     while open_set:
         _, current = heapq.heappop(open_set)
+        if current in explored:
+            continue
         explored.append(current)
-        steps.append((explored.copy(), parent.copy()))
+        steps.append((current, parent.get(current)))
         
         if current == goal:
             path = []
