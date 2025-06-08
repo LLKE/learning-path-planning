@@ -83,10 +83,10 @@ def main():
     step_counter = st.empty()
     with st.expander("Algorithm Description"):
         st.markdown(descriptions[algorithm])
-    for i, step in enumerate(steps):
+    for i in range(len(steps)):
         fig, ax = plt.subplots()
         is_last_step = (i == len(steps) - 1)
-        animate_pathfinding(grid, step, start, goal, ax, is_last_step, path)
+        animate_pathfinding(grid, steps, i, start, goal, ax, is_last_step, path)
         placeholder.pyplot(fig)
         step_counter.markdown(f"**Step: {i + 1}**")
         plt.close(fig)

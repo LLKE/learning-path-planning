@@ -1,7 +1,19 @@
 import numpy as np
 
-def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False, path=None):
-    """Animates the pathfinding process with start and goal markers."""
+def get_step_state(steps, step_index):
+    """Reconstruct explored list and parent dict up to step_index"""
+    explored = []
+    parent = {}
+    
+    for i in range(step_index + 1):
+        node, p = steps[i]
+        explored.append(node)
+        if p is not None:
+            parent[node] = p 
+    return explored, parent
+
+def animate_pathfinding(grid, steps, step_index, start, goal, ax, is_last_step=False, path=None):
+    """Animates the pathfinding process."""
     grid = np.array(grid)
 
     ax.set_xticks(np.arange(0, grid.shape[1], 1))  # X = columns
@@ -19,7 +31,7 @@ def animate_pathfinding(grid, step, start, goal, ax, is_last_step=False, path=No
             if grid[row, col] == 1:
                 ax.plot(col, row, "ko", markersize=6)
 
-    explored, parent = step
+    explored, parent = get_step_state(steps, step_index)
 
     # Remove theta if present
     if len(explored) > 0 and len(explored[0]) == 3:
