@@ -1,6 +1,8 @@
 import math
 import heapq
 
+DIRECTIONS = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
 def line_of_sight(grid, start, end):
     """Checks if there's a line of sight between two points on the grid."""
     x0, y0 = start
@@ -46,7 +48,7 @@ def theta_star(grid, start, goal, steps):
                 current = parent[current]
             return path[::-1]
         
-        for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]:
+        for dx, dy in DIRECTIONS:
             neighbor = (current[0] + dx, current[1] + dy)
             if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols and grid[neighbor[0]][neighbor[1]] == 0:
                 new_g = g_cost[current] + math.dist(current, neighbor)

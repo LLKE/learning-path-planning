@@ -74,7 +74,7 @@ def main():
         tracemalloc.start()
         path = a_star(grid, start, goal, steps)
         _, peak = tracemalloc.get_traced_memory()
-        print(f"Peak memory usage: {peak / 1024:.2f} KB")
+        print(f"Peak memory usage A*: {peak / 1024:.2f} KB")
         tracemalloc.stop()  
     elif algorithm == "Hybrid A*":
         start = (start[0], start[1], 0)  # Append orientation to start
@@ -89,6 +89,7 @@ def main():
     step_counter = st.empty()
     with st.expander("Algorithm Description"):
         st.markdown(descriptions[algorithm])
+    tracemalloc.start()
     for i in range(len(steps)):
         fig, ax = plt.subplots()
         is_last_step = (i == len(steps) - 1)
@@ -97,6 +98,11 @@ def main():
         step_counter.markdown(f"**Step: {i + 1}**")
         plt.close(fig)
         time.sleep(animation_speed)  # Use the selected animation speed
+    _, peak = tracemalloc.get_traced_memory()
+    
+    tracemalloc.stop()
+    print(f"Peak memory usage animation: {peak / 1024:.2f} KB")
+    st.stop()
 
     
 if __name__ == "__main__":

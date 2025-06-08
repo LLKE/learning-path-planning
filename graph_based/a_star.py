@@ -1,6 +1,8 @@
 import heapq
 import math  
 
+DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  # Up, Left, Down, Right
+
 def a_star(grid, start, goal, steps):
     """A* pathfinding algorithm with animation support."""
     rows, cols = len(grid), len(grid[0])
@@ -24,7 +26,7 @@ def a_star(grid, start, goal, steps):
                 current = parent[current]
             return path[::-1]
         
-        for dx, dy in [(0, -1), (-1, 0), (0, 1), (1, 0)]:
+        for dx, dy in DIRECTIONS:
             neighbor = (current[0] + dx, current[1] + dy)
             if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols and grid[neighbor[0]][neighbor[1]] == 0:
                 new_g = g_cost[current] + 1
