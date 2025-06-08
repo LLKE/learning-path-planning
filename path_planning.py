@@ -6,7 +6,7 @@ import tracemalloc
 from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
-from animation import animate_pathfinding
+from visualization import display_path_finding_step
 from algorithm_descriptions import descriptions
 
 def main():
@@ -93,7 +93,7 @@ def main():
     for i in range(len(steps)):
         ax.clear()
         is_last_step = (i == len(steps) - 1)
-        animate_pathfinding(grid, steps, i, start, goal, ax, is_last_step, path)
+        display_path_finding_step(grid, steps, i, start, goal, ax, is_last_step, path)
         placeholder.pyplot(fig)
         step_counter.markdown(f"**Step: {i + 1}**")
         time.sleep(animation_speed)  # Use the selected animation speed
