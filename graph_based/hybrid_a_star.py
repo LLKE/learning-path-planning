@@ -111,8 +111,10 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
     #pdb.set_trace()
     while open_set:
         _, current = heapq.heappop(open_set)
+        if current in explored:
+            continue
         explored.append(current)
-        steps.append((explored.copy(), came_from.copy()))
+        steps.append((current, came_from.get(current)))
         
         # Check if the current cell is the goal cell (relaxing theta condition)
         if math.isclose(current[0], goal[0], rel_tol=1e-9) and math.isclose(current[1], goal[1], rel_tol=1e-9):  # Compare only x and y coordinates
@@ -122,7 +124,7 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
             if (is_on_path(goal, current, neighbor)):
                 explored.append(goal)
                 came_from[goal] = current
-                steps.append((explored.copy(), came_from.copy()))
+                steps.append((current, came_from.get(current)))
                 return reconstruct_path(came_from, goal)
 
             if not is_valid(neighbor, grid):
