@@ -11,8 +11,6 @@ from algorithm_descriptions import descriptions
 
 def main():
 
-    tracemalloc.start()
-
     st.title("Path Planning")
 
     # Sidebar: Grid-specific settings
@@ -73,7 +71,11 @@ def main():
     if algorithm == "Theta*":
         path = theta_star(grid, start, goal, steps)
     elif algorithm == "A*":
+        tracemalloc.start()
         path = a_star(grid, start, goal, steps)
+        _, peak = tracemalloc.get_traced_memory()
+        print(f"Peak memory usage: {peak / 1024:.2f} KB")
+        tracemalloc.stop()  
     elif algorithm == "Hybrid A*":
         start = (start[0], start[1], 0)  # Append orientation to start
         goal = (goal[0], goal[1], 0)    # Append orientation to goal
@@ -96,9 +98,6 @@ def main():
         plt.close(fig)
         time.sleep(animation_speed)  # Use the selected animation speed
 
-    _, peak = tracemalloc.get_traced_memory()
-    print(f"Peak memory usage: {peak / 1024:.2f} KB")
-    tracemalloc.stop()
     
 if __name__ == "__main__":
     main()
