@@ -84,19 +84,18 @@ def main():
         st.error("Unknown algorithm specified.")
         return
 
-    #if st.sidebar.button("Start Animation"):
+    fig, ax = plt.subplots()
     placeholder = st.empty()
     step_counter = st.empty()
     with st.expander("Algorithm Description"):
         st.markdown(descriptions[algorithm])
     tracemalloc.start()
     for i in range(len(steps)):
-        fig, ax = plt.subplots()
+        ax.clear()
         is_last_step = (i == len(steps) - 1)
         animate_pathfinding(grid, steps, i, start, goal, ax, is_last_step, path)
         placeholder.pyplot(fig)
         step_counter.markdown(f"**Step: {i + 1}**")
-        plt.close(fig)
         time.sleep(animation_speed)  # Use the selected animation speed
     _, peak = tracemalloc.get_traced_memory()
     
