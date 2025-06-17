@@ -15,21 +15,6 @@ def display_path_finding_step(grid, steps, step_index, start, goal, ax, is_last_
     """Animates the pathfinding process."""
     grid = np.array(grid)
 
-    ax.set_xticks(np.arange(0, grid.shape[1], 1))  # X = columns
-    ax.set_yticks(np.arange(0, grid.shape[0], 1))  # Y = rows
-    ax.grid(which="major", color="black", linestyle='-', linewidth=0.5)
-    ax.tick_params(which="both", bottom=False, left=False, labelbottom=False, labelleft=False)
-
-    # Plot start and goal (convert from row,col to x,y)
-    ax.plot(start[1], start[0], "go", markersize=6, label="Start")
-    ax.plot(goal[1], goal[0], "bo", markersize=6, label="Goal")
-
-    # Plot obstacles
-    for row in range(grid.shape[0]):
-        for col in range(grid.shape[1]):
-            if grid[row, col] == 1:
-                ax.plot(col, row, "ko", markersize=6)
-
     explored, parent = get_step_state(steps, step_index)
 
     # Remove theta if present
