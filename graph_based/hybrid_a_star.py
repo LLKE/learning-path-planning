@@ -6,7 +6,9 @@ import pdb
 
 def heuristic(node, goal, turning_radius):
     """Heuristic function using Euclidean distance."""
-    return np.linalg.norm(np.array(goal[:2]) - np.array(node[:2]))
+    path = DubinsPath(node, goal, turning_radius)
+    result = path.compute_shortest_path()
+    return result["length"] if result else np.inf
 
 def is_valid(node, grid):
     x, y, _ = node
@@ -24,7 +26,19 @@ def snap_to_grid(node):
     rounded_theta = round(theta / (math.pi/8)) * (math.pi/8)
     return (rounded_x, rounded_y, rounded_theta)
 
-def get_neighbors(node, turning_radius, v=1.0, delta_t=1.0):
+def is_arc_collision_free(x, y, theta, omega, v, delta_t, grid):
+    dt_sample = 0.1
+    t = 0
+    while t < delta_t:
+        xi = x + v*math.cos(theta + omega*t)*dt_sample
+        yi = y + v*math.sin(theta + omega*t)*dt_sample
+        if 0 <= int(xi) < len(grid[0]) and 0 <= int(yi) < len(grid[1]):
+            if grid[int(xi), int(yi)] == 1: return False
+            
+        t += dt_sample
+    return True
+
+def get_neighbors(node, turning_radius, grid, v=1.0, delta_t=1.0):
 
     x, y, theta = node
     neighbors = []
@@ -51,7 +65,7 @@ def get_neighbors(node, turning_radius, v=1.0, delta_t=1.0):
 
         # Snap the new position to the grid and add to neighbors
         neighbor = snap_to_grid((new_x, new_y, new_theta))
-        if neighbor != node:  # Avoid adding the current node as its own neighbor
+        if neighbor != node and is_arc_collision_free(new_x, new_y, new_theta, omega, v, delta_t, grid):  # Avoid adding the current node as its own neighbor
             neighbors.append(neighbor)
             
     return neighbors
@@ -128,7 +142,7 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
         if math.isclose(current[0], goal[0], rel_tol=1e-9) and math.isclose(current[1], goal[1], rel_tol=1e-9):  # Compare only x and y coordinates
             return reconstruct_path(came_from, current)
         
-        for neighbor in get_neighbors(current, turning_radius):
+        for neighbor in get_neighbors(current, turning_radius, grid):
             if (is_on_path(goal, current, neighbor)):
                 explored.append(goal)
                 came_from[goal] = current
