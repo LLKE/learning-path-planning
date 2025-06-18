@@ -6,7 +6,7 @@ import tracemalloc
 from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
-from visualization import display_path_finding_step
+from visualization import animate_pathfinding, prepare_ax_for_animation
 from algorithm_descriptions import descriptions
 
 def main():
@@ -71,11 +71,7 @@ def main():
     if algorithm == "Theta*":
         path = theta_star(grid, start, goal, steps)
     elif algorithm == "A*":
-        tracemalloc.start()
         path = a_star(grid, start, goal, steps)
-        _, peak = tracemalloc.get_traced_memory()
-        print(f"Peak memory usage A*: {peak / 1024:.2f} KB")
-        tracemalloc.stop()  
     elif algorithm == "Hybrid A*":
         start = (start[0], start[1], 0)  # Append orientation to start
         goal = (goal[0], goal[1], 0)    # Append orientation to goal
@@ -89,31 +85,11 @@ def main():
     step_counter = st.empty()
     with st.expander("Algorithm Description"):
         st.markdown(descriptions[algorithm])
-    tracemalloc.start()
-    ax.set_xticks(np.arange(0, grid.shape[1], 1))  # X = columns
-    ax.set_yticks(np.arange(0, grid.shape[0], 1))  # Y = rows
-    ax.grid(which="major", color="black", linestyle='-', linewidth=0.5)
-    ax.tick_params(which="both", bottom=False, left=False, labelbottom=False, labelleft=False)
-
-    # Plot start and goal (convert from row,col to x,y)
-    ax.plot(start[1], start[0], "go", markersize=6, label="Start")
-    ax.plot(goal[1], goal[0], "bo", markersize=6, label="Goal")
-
-    # Plot obstacles
-    for row in range(grid.shape[0]):
-        for col in range(grid.shape[1]):
-            if grid[row, col] == 1:
-                ax.plot(col, row, "ko", markersize=6)
-    for i in range(len(steps)):
-        is_last_step = (i == len(steps) - 1)
-        display_path_finding_step(grid, steps, i, start, goal, ax, is_last_step, path)
+    ax = prepare_ax_for_animation(ax, grid, start, goal)
+    for fig, i in animate_pathfinding(fig, ax, steps, path, animation_speed=animation_speed):
         placeholder.pyplot(fig)
-        step_counter.markdown(f"**Step: {i + 1}**")
-        time.sleep(animation_speed)  # Use the selected animation speed
-    _, peak = tracemalloc.get_traced_memory()
+        step_counter.markdown(f"**Step {i+1}*")
     
-    tracemalloc.stop()
-    print(f"Peak memory usage animation: {peak / 1024:.2f} KB")
     st.stop()
 
     
