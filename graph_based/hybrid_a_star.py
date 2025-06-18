@@ -29,8 +29,10 @@ def get_neighbors(node, turning_radius, v=1.0, delta_t=1.0):
     x, y, theta = node
     neighbors = []
 
-    # Define possible steering angles (left, straight, right)
-    steering_angles = [math.atan2(1, turning_radius), 0, -math.atan2(1, turning_radius)]
+    # Define possible steering angles between left and right
+    max_delta = math.atan2(1, turning_radius)
+    num_angles = 5
+    steering_angles = np.linspace(-max_delta, max_delta, num_angles)
 
     for steering_angle in steering_angles:
         # Compute the change in orientation (dθ/dt = ω)
