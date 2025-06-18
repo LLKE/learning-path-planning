@@ -40,8 +40,14 @@ def get_neighbors(node, turning_radius, v=1.0, delta_t=1.0):
         new_theta = theta + omega * delta_t
 
         # Compute the new position using dx/dt and dy/dt
-        new_x = x + v * math.cos(new_theta) * delta_t
-        new_y = y + v * math.sin(new_theta) * delta_t
+        if abs(steering_angle) < 1e-6: # Straight
+            new_x = x + v * math.cos(theta) * delta_t
+            new_y = y + v * math.sin(theta) * delta_t
+        else: # Compute circular arc endpoint
+            R = 1 / math.tan(steering_angle)
+            new_theta = theta + (v/R) * delta_t
+            new_x = x + R * (math.sin(new_theta) - math.sin(theta))
+            new_y = y - R * (math.cos(new_theta) - math.cos(theta))
 
         # Snap the new position to the grid and add to neighbors
         neighbor = snap_to_grid((new_x, new_y, new_theta))
