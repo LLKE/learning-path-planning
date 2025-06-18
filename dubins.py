@@ -1,348 +1,221 @@
 import numpy as np
 
 class DubinsPath:
-    def __init__(self, start, end, turning_radius):
-        self.start = np.array(start)
-        self.end = np.array(end)
-        self.turning_radius = turning_radius
+    def __init__(self, start, end, turning_radius, step_size=0.1):
+        """
+        start: (x0, y0, theta0)
+        end:   (x1, y1, theta1)
+        turning_radius: minimum turning radius R
+        step_size: sampling resolution along arcs
+        """
+        self.start = start
+        self.end = end
+        self.R = turning_radius
+        self.step = step_size
 
-    def distance(self, point_1, point_2):
-        return np.linalg.norm(np.array(point_2) - np.array(point_1))
-    
-    def rotate_point(self, point, angle):
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
-                                    [np.sin(angle),   np.cos(angle)]
-                                    ])
-        return np.dot(rotation_matrix, point)
-    
-    def lsl_path(self): 
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
-        
-        # Compute the circle centers
-        x_center0 = x0 - self.turning_radius * np.sin(theta0)
-        y_center0 = y0 + self.turning_radius * np.cos(theta0)
-        x_center1 = x1 - self.turning_radius * np.sin(theta1)
-        y_center1 = y1 + self.turning_radius * np.cos(theta1)
-        
-        # Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Create the path
-        # Arc from start to tangent point 1
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([ [x_tangent0, y_tangent0], [x_tangent1, y_tangent1] ])
-        
-        # Arc from tangent point 2 to goal
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
-    
+    @staticmethod
+    def _mod2pi(angle):
+        return angle - 2 * np.pi * np.floor(angle / (2 * np.pi))
 
-    def lsr_path(self):
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
-        
-        # Step 1: Compute the circle centers for left turn (start) and right turn (goal)
-        x_center0 = x0 - self.turning_radius * np.sin(theta0)
-        y_center0 = y0 + self.turning_radius * np.cos(theta0)
-        x_center1 = x1 + self.turning_radius * np.sin(theta1)
-        y_center1 = y1 - self.turning_radius * np.cos(theta1)
-        
-        # Step 2: Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Step 3: Check if a solution exists (the distance must be greater than 2 * radius)
-        if d < 2 * self.turning_radius:
-            return None  # No valid path if the circles are too close
-        
-        # Step 4: Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Step 5: Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Step 6: Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Step 7: Create the path
-        # Arc from start to tangent point 1 (left turn)
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([ [x_tangent0, y_tangent0], [x_tangent1, y_tangent1] ])
-        
-        # Arc from tangent point 2 to goal (right turn)
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
+    def _center(self, x, y, theta, turn):
+        # turn = +1 for left, -1 for right
+        return np.array([x - turn * self.R * np.sin(theta),
+                         y + turn * self.R * np.cos(theta)])
 
+    def _generate_arc(self, center, start_angle, end_angle, turn):
+        # ensure shortest positive rotation for left, negative for right
+        sa = self._mod2pi(start_angle)
+        ea = self._mod2pi(end_angle)
+        if turn == 1:  # left turn
+            if ea <= sa:
+                ea += 2 * np.pi
+        else:  # right turn
+            if ea >= sa:
+                ea -= 2 * np.pi
+        angles = np.arange(sa, ea, (self.step / self.R) * turn)
+        # include end angle
+        angles = np.append(angles, ea)
+        pts = np.vstack([center[0] + self.R * np.cos(angles),
+                         center[1] + self.R * np.sin(angles)]).T
+        return pts
 
-    def rsl_path(self):
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
-        
-        # Step 1: Compute the circle centers for right turn (start) and left turn (goal)
-        x_center0 = x0 + self.turning_radius * np.sin(theta0)
-        y_center0 = y0 - self.turning_radius * np.cos(theta0)
-        x_center1 = x1 - self.turning_radius * np.sin(theta1)
-        y_center1 = y1 + self.turning_radius * np.cos(theta1)
-        
-        # Step 2: Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Step 3: Check if a solution exists (the distance must be greater than 2 * radius)
-        if d < 2 * self.turning_radius:
-            return None  # No valid path if the circles are too close
-        
-        # Step 4: Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Step 5: Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Step 6: Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Step 7: Create the path
-        # Arc from start to tangent point 1 (right turn)
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([ [x_tangent0, y_tangent0], [x_tangent1, y_tangent1] ])
-        
-        # Arc from tangent point 2 to goal (left turn)
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
+    def _arc_length(self, delta_angle):
+        return abs(delta_angle) * self.R
 
+    def _compute_LSL(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        # circle centers
+        c0 = self._center(x0, y0, th0, +1)
+        c1 = self._center(x1, y1, th1, +1)
+        # vector and distance
+        d_vec = c1 - c0
+        d = np.linalg.norm(d_vec)
+        if d < 2 * R:
+            return None
+        theta = np.arctan2(d_vec[1], d_vec[0])
+        alpha = np.arccos(2 * R / d)
+        psi = theta + alpha
+        # tangent points
+        t0 = c0 + R * np.array([np.cos(psi), np.sin(psi)])
+        t1 = c1 + R * np.array([np.cos(psi), np.sin(psi)])
+        # arc segments
+        arc1 = self._generate_arc(c0, th0 + np.pi/2, psi, +1)
+        arc2 = self._generate_arc(c1, psi, th1 + np.pi/2, +1)
+        # straight segment
+        straight = np.vstack([t0, t1])
+        # lengths
+        len1 = self._arc_length(self._mod2pi(psi - (th0 + np.pi/2)))
+        len2 = np.linalg.norm(t1 - t0)
+        len3 = self._arc_length(self._mod2pi((th1 + np.pi/2) - psi))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, straight, arc2])
+        return {'segments': path, 'length': total_length}
 
-    def rsr_path(self):
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
-        
-        # Step 1: Compute the circle centers for right turn (start) and right turn (goal)
-        x_center0 = x0 + self.turning_radius * np.sin(theta0)
-        y_center0 = y0 - self.turning_radius * np.cos(theta0)
-        x_center1 = x1 + self.turning_radius * np.sin(theta1)
-        y_center1 = y1 - self.turning_radius * np.cos(theta1)
-        
-        # Step 2: Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Step 3: Check if a solution exists (the distance must be greater than 2 * radius)
-        if d < 2 * self.turning_radius:
-            return None  # No valid path if the circles are too close
-        
-        # Step 4: Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Step 5: Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Step 6: Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Step 7: Create the path
-        # Arc from start to tangent point 1 (right turn)
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([ [x_tangent0, y_tangent0], [x_tangent1, y_tangent1] ])
-        
-        # Arc from tangent point 2 to goal (right turn)
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
+    def _compute_RSR(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        c0 = self._center(x0, y0, th0, -1)
+        c1 = self._center(x1, y1, th1, -1)
+        d_vec = c1 - c0
+        d = np.linalg.norm(d_vec)
+        if d < 2 * R:
+            return None
+        theta = np.arctan2(d_vec[1], d_vec[0])
+        alpha = np.arccos(2 * R / d)
+        psi = theta - alpha
+        t0 = c0 + R * np.array([np.cos(psi), np.sin(psi)])
+        t1 = c1 + R * np.array([np.cos(psi), np.sin(psi)])
+        arc1 = self._generate_arc(c0, th0 - np.pi/2, psi, -1)
+        arc2 = self._generate_arc(c1, psi, th1 - np.pi/2, -1)
+        straight = np.vstack([t0, t1])
+        len1 = self._arc_length(self._mod2pi((th0 - np.pi/2) - psi))
+        len2 = np.linalg.norm(t1 - t0)
+        len3 = self._arc_length(self._mod2pi(psi - (th1 - np.pi/2)))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, straight, arc2])
+        return {'segments': path, 'length': total_length}
 
+    def _compute_LSR(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        c0 = self._center(x0, y0, th0, +1)
+        c1 = self._center(x1, y1, th1, -1)
+        d_vec = c1 - c0
+        d = np.linalg.norm(d_vec)
+        if d <= 2 * R:
+            return None
+        theta = np.arctan2(d_vec[1], d_vec[0])
+        alpha = np.arccos(2 * R / d)
+        psi = theta + alpha
+        t0 = c0 + R * np.array([np.cos(psi), np.sin(psi)])
+        t1 = c1 + R * np.array([np.cos(psi + np.pi), np.sin(psi + np.pi)])
+        arc1 = self._generate_arc(c0, th0 + np.pi/2, psi, +1)
+        arc2 = self._generate_arc(c1, psi + np.pi, th1 - np.pi/2, -1)
+        straight = np.vstack([t0, t1])
+        len1 = self._arc_length(self._mod2pi(psi - (th0 + np.pi/2)))
+        len2 = np.linalg.norm(t1 - t0)
+        len3 = self._arc_length(self._mod2pi((th1 - np.pi/2) - (psi + np.pi)))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, straight, arc2])
+        return {'segments': path, 'length': total_length}
 
-    def rlr_path(self):
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
+    def _compute_RSL(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        c0 = self._center(x0, y0, th0, -1)
+        c1 = self._center(x1, y1, th1, +1)
+        d_vec = c1 - c0
+        d = np.linalg.norm(d_vec)
+        if d <= 2 * R:
+            return None
+        theta = np.arctan2(d_vec[1], d_vec[0])
+        alpha = np.arccos(2 * R / d)
+        psi = theta - alpha
+        t0 = c0 + R * np.array([np.cos(psi), np.sin(psi)])
+        t1 = c1 + R * np.array([np.cos(psi + np.pi), np.sin(psi + np.pi)])
+        arc1 = self._generate_arc(c0, th0 - np.pi/2, psi, -1)
+        arc2 = self._generate_arc(c1, psi + np.pi, th1 + np.pi/2, +1)
+        straight = np.vstack([t0, t1])
+        len1 = self._arc_length(self._mod2pi((th0 - np.pi/2) - psi))
+        len2 = np.linalg.norm(t1 - t0)
+        len3 = self._arc_length(self._mod2pi((th1 + np.pi/2) - (psi + np.pi)))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, straight, arc2])
+        return {'segments': path, 'length': total_length}
 
-        # Step 1: Compute the circle centers for right turn (start) and right turn (goal)
-        x_center0 = x0 - self.turning_radius * np.sin(theta0)
-        y_center0 = y0 + self.turning_radius * np.cos(theta0)
-        x_center1 = x1 - self.turning_radius * np.sin(theta1)
-        y_center1 = y1 + self.turning_radius * np.cos(theta1)
+    def _compute_LRL(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        c0 = self._center(x0, y0, th0, +1)
+        c1 = self._center(x1, y1, th1, +1)
+        d = np.linalg.norm(c1 - c0)
+        # middle circle separation
+        if d > 4 * R:
+            return None
+        # compute angle between centers
+        theta = np.arctan2(c1[1] - c0[1], c1[0] - c0[0])
+        # compute intermediate angle
+        alpha = np.arccos(d / (4 * R))
+        psi1 = theta + alpha + np.pi/2
+        psi2 = theta - alpha + np.pi/2
+        # tangent points
+        t0 = c0 + R * np.array([np.cos(psi1), np.sin(psi1)])
+        t1 = c1 + R * np.array([np.cos(psi2), np.sin(psi2)])
+        # arcs
+        arc1 = self._generate_arc(c0, th0 + np.pi/2, psi1, +1)
+        arc2 = self._generate_arc(c1, psi2, psi1 + np.pi, -1)
+        arc3 = self._generate_arc(c1, psi1 + np.pi, th1 + np.pi/2, +1)
+        straight = np.vstack([t0, t1])  # unused in LRL, placeholder
+        len1 = self._arc_length(self._mod2pi(psi1 - (th0 + np.pi/2)))
+        len2 = self._arc_length(self._mod2pi((psi1 + np.pi) - psi2))
+        len3 = self._arc_length(self._mod2pi((th1 + np.pi/2) - (psi1 + np.pi)))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, arc2, arc3])
+        return {'segments': path, 'length': total_length}
 
-        # Step 2: Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Step 3: Check if a solution exists (the distance must be greater than 2 * radius)
-        if d < 2 * self.turning_radius:
-            return None  # No valid path if the circles are too close
-        
-        # Step 4: Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Step 5: Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Step 6: Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Step 7: Create the path
-        # Arc from start to tangent point 1 (right turn)
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([[x_tangent0, y_tangent0], [x_tangent1, y_tangent1]])
-        
-        # Arc from tangent point 2 to goal (right turn)
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
+    def _compute_RLR(self):
+        x0, y0, th0 = self.start
+        x1, y1, th1 = self.end
+        R = self.R
+        c0 = self._center(x0, y0, th0, -1)
+        c1 = self._center(x1, y1, th1, -1)
+        d = np.linalg.norm(c1 - c0)
+        if d > 4 * R:
+            return None
+        theta = np.arctan2(c1[1] - c0[1], c1[0] - c0[0])
+        alpha = np.arccos(d / (4 * R))
+        psi1 = theta - alpha - np.pi/2
+        psi2 = theta + alpha - np.pi/2
+        t0 = c0 + R * np.array([np.cos(psi1), np.sin(psi1)])
+        t1 = c1 + R * np.array([np.cos(psi2), np.sin(psi2)])
+        arc1 = self._generate_arc(c0, th0 - np.pi/2, psi1, -1)
+        arc2 = self._generate_arc(c1, psi1, psi2 + np.pi, +1)
+        arc3 = self._generate_arc(c1, psi2 + np.pi, th1 - np.pi/2, -1)
+        len1 = self._arc_length(self._mod2pi((th0 - np.pi/2) - psi1))
+        len2 = self._arc_length(self._mod2pi((psi2 + np.pi) - psi1))
+        len3 = self._arc_length(self._mod2pi((psi2 + np.pi) - (th1 - np.pi/2)))
+        total_length = len1 + len2 + len3
+        path = np.vstack([arc1, arc2, arc3])
+        return {'segments': path, 'length': total_length}
 
-
-    def lrl_path(self):
-        x0, y0, theta0 = self.start
-        x1, y1, theta1 = self.end
-        
-        # Step 1: Compute the circle centers for left turn (start) and left turn (goal)
-        x_center0 = x0 + self.turning_radius * np.sin(theta0)
-        y_center0 = y0 - self.turning_radius * np.cos(theta0)
-        x_center1 = x1 + self.turning_radius * np.sin(theta1)
-        y_center1 = y1 - self.turning_radius * np.cos(theta1)
-        
-        # Step 2: Compute the distance between the circle centers
-        d = self.distance([x_center0, y_center0], [x_center1, y_center1])
-        
-        # Step 3: Check if a solution exists (the distance must be greater than 2 * radius)
-        if d < 2 * self.turning_radius:
-            return None  # No valid path if the circles are too close
-        
-        # Step 4: Compute the tangent angle
-        alpha = np.arcsin((2 * self.turning_radius) / d)
-        
-        # Step 5: Compute the angle of the line connecting the two circle centers
-        theta_line = np.arctan2(y_center1 - y_center0, x_center1 - x_center0)
-        
-        # Step 6: Compute the tangent points
-        tangent_angle1 = theta_line + alpha
-        tangent_angle2 = theta_line - alpha
-        
-        # Compute tangent points on each circle
-        x_tangent0 = x_center0 + self.turning_radius * np.cos(tangent_angle1)
-        y_tangent0 = y_center0 + self.turning_radius * np.sin(tangent_angle1)
-        x_tangent1 = x_center1 + self.turning_radius * np.cos(tangent_angle2)
-        y_tangent1 = y_center1 + self.turning_radius * np.sin(tangent_angle2)
-        
-        # Step 7: Create the path
-        # Arc from start to tangent point 1 (left turn)
-        arc1_points = self._generate_arc_points(x_center0, y_center0, tangent_angle1, theta0)
-        
-        # Straight segment from tangent point 1 to tangent point 2
-        straight_segment = np.array([[x_tangent0, y_tangent0], [x_tangent1, y_tangent1]])
-        
-        # Arc from tangent point 2 to goal (left turn)
-        arc2_points = self._generate_arc_points(x_center1, y_center1, theta1, tangent_angle2)
-        
-        # Combine all segments
-        path = np.vstack([arc1_points, straight_segment, arc2_points])
-        
-        # Return path and its length
-        total_length = self._calculate_path_length(arc1_points, straight_segment, arc2_points)
-        return {"segments": path, "length": total_length}
-    
-    
     def compute_shortest_path(self):
-        paths = {
-            "LSL": self.lsl_path(),
-            "LSR": self.lsr_path(),
-            "RSL": self.rsl_path(),
-            "RSR": self.rsr_path(),
-            "LRL": self.lrl_path(),
-            "RLR": self.rlr_path()
-        }
-
-        paths = {key: path for key, path in paths.items() if path is not None}
-        shortest_path = min(paths.items(), key=lambda x: x[1]['length']) if paths else None
-        return shortest_path
-    
-
-    def _generate_arc_points(self, x_center, y_center, start_angle, end_angle, num_points=100):
-        """Generate points along the circular arc."""
-        angles = np.linspace(start_angle, end_angle, num_points)
-        x_points = x_center + self.turning_radius * np.cos(angles)
-        y_points = y_center + self.turning_radius * np.sin(angles)
-        return np.column_stack((x_points, y_points))
-    
-
-    def _calculate_path_length(self, arc1, straight, arc2):
-        """Calculate the total length of the path."""
-        arc1_length = self.turning_radius * np.abs(np.arctan2(arc1[-1][1] - arc1[0][1], arc1[-1][0] - arc1[0][0]))
-        arc2_length = self.turning_radius * np.abs(np.arctan2(arc2[-1][1] - arc2[0][1], arc2[-1][0] - arc2[0][0]))
-        straight_length = np.linalg.norm(straight[1] - straight[0])
-        return arc1_length + arc2_length + straight_length
+        # gather all path types
+        methods = [self._compute_LSL, self._compute_RSR,
+                   self._compute_LSR, self._compute_RSL,
+                   self._compute_LRL, self._compute_RLR]
+        results = {}
+        for fn in methods:
+            res = fn()
+            if res is not None:
+                results[fn.__name__[9:].upper()] = res
+        if not results:
+            return None
+        # select minimum length
+        best = min(results.values(), key=lambda p: p['length'])
+        return best
