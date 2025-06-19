@@ -3,17 +3,21 @@ import math
 
 DIRECTIONS = [(0, -1), (-1, 0), (0, 1), (1, 0)]  # Up, Left, Down, Right
 
+def heuristic(a, b):
+    # manhattan distance
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 def a_star(grid, start, goal, steps):
     """A* pathfinding algorithm with animation support."""
     rows, cols = len(grid), len(grid[0])
     open_set = []
-    heapq.heappush(open_set, (0, start))
+    heapq.heappush(open_set, (0, math.dist(start, goal), start))
     g_cost = {start: 0}
     parent = {start: None}
     explored = []
     
     while open_set:
-        _, current = heapq.heappop(open_set)
+        _, _, current = heapq.heappop(open_set)
         if current in explored:
             continue
         explored.append(current)
@@ -38,7 +42,7 @@ def a_star(grid, start, goal, steps):
                 g_cost[neighbor] = new_g
                 
                 # Here, heuristic (distance to goal) comes into play
-                heapq.heappush(open_set, (g_cost[neighbor] + math.dist(neighbor, goal), neighbor))
+                heapq.heappush(open_set, (g_cost[neighbor], 12* heuristic(neighbor, goal), neighbor))
     
     return None
 
