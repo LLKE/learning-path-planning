@@ -58,6 +58,7 @@ def animate_pathfinding_with_orientation(fig, ax, steps, path=None, animation_sp
     explored = []
     parent = {}
     vehicle_width, vehicle_height = .2, .3
+    prev_theta = 0
     for i, (current, parent) in enumerate(steps):
         is_last_step = (i == len(steps) - 1)
         current_x, current_y, current_theta = current[0], current[1], current[2]
@@ -79,7 +80,7 @@ def animate_pathfinding_with_orientation(fig, ax, steps, path=None, animation_sp
                     ax.plot([a[1], b[1]], [a[0], b[0]], color='green', linewidth=2)
             else:
                 ax.text(0.5, 0.5, "No path found", ...)
-
+        prev_theta = current_theta
         yield  fig, i
         time.sleep(animation_speed)  # Use the selected animation speed
 
