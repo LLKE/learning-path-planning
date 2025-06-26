@@ -6,7 +6,7 @@ import tracemalloc
 from graph_based.a_star import a_star
 from graph_based.theta_star import theta_star
 from graph_based.hybrid_a_star import hybrid_a_star
-from visualization import animate_pathfinding, prepare_ax_for_animation
+from visualization import animate_pathfinding, animate_pathfinding_with_orientation, prepare_ax_for_animation
 from algorithm_descriptions import descriptions
 
 def main():
@@ -68,6 +68,7 @@ def main():
     grid[goal[0], goal[1]] = 0
 
     steps = []
+    animate_with_orientation = False
     if algorithm == "Theta*":
         path = theta_star(grid, start, goal, steps)
     elif algorithm == "A*":
@@ -76,6 +77,7 @@ def main():
         start = (start[0], start[1], 0)  # Append orientation to start
         goal = (goal[0], goal[1], 0)    # Append orientation to goal
         path = hybrid_a_star(grid, start, goal, turning_radius, steps)
+        animate_with_orientation = True
     else:
         st.error("Unknown algorithm specified.")
         return
@@ -86,9 +88,14 @@ def main():
     with st.expander("Algorithm Description"):
         st.markdown(descriptions[algorithm])
     ax = prepare_ax_for_animation(ax, grid, start, goal)
-    for fig, i in animate_pathfinding(fig, ax, steps, path, animation_speed=animation_speed):
-        placeholder.pyplot(fig)
-        step_counter.markdown(f"**Step {i+1}*")
+    if animate_with_orientation:
+        for fig, i in animate_pathfinding_with_orientation(fig, ax, steps, path, animation_speed=animation_speed):
+            placeholder.pyplot(fig)
+            step_counter.markdown(f"**Step {i+1}*")
+    else: 
+        for fig, i in animate_pathfinding(fig, ax, steps, path, animation_speed=animation_speed):
+            placeholder.pyplot(fig)
+            step_counter.markdown(f"**Step {i+1}*")
     
     st.stop()
 
