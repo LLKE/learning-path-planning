@@ -78,27 +78,6 @@ def reconstruct_path(came_from, current):
     path.reverse()
     return path
 
-def reconstruct_path_with_dubins(came_from, current, turning_radius):
-
-    # Reconstruct the path as a sequence of nodes
-    path = [current]
-    while current in came_from:
-        current = came_from[current]
-        path.append(current)
-    path.reverse()
-
-    # Convert the path into Dubins paths
-    dubins_path = []
-    for i in range(len(path) - 1):
-        start = path[i]
-        end = path[i + 1]
-        dubins = DubinsPath(start, end, turning_radius)
-        shortest_path = dubins.compute_shortest_path()
-        if shortest_path:
-            dubins_path.extend(shortest_path["segments"])  # Add the Dubins path segments
-
-    return dubins_path
-
 def is_on_path(goal, current, neighbor):
     """
     Check if the goal lies on the line segment between current and neighbor.
@@ -129,13 +108,13 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
     came_from = {}
     g_score = {start: 0}
     f_score = {start: heuristic(start, goal, turning_radius)}
-    explored = []
+    explored = set()
     #pdb.set_trace()
     while open_set:
         _, current = heapq.heappop(open_set)
         if current in explored:
             continue
-        explored.append(current)
+        explored.add(current)
         steps.append((current, came_from.get(current)))
         
         # Check if the current cell is the goal cell (relaxing theta condition)
@@ -144,7 +123,7 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
         
         for neighbor in get_neighbors(current, turning_radius, grid):
             if (is_on_path(goal, current, neighbor)):
-                explored.append(goal)
+                explored.add(goal)
                 came_from[goal] = current
                 steps.append((current, came_from.get(current)))
                 return reconstruct_path(came_from, goal)
