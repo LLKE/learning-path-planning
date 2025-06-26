@@ -25,7 +25,7 @@ def main():
 
     # Sidebar: Animation-specific settings
     st.sidebar.header("Animation Settings")
-    animation_speed = st.sidebar.slider("Animation Speed (seconds per frame)", min_value=0.1, max_value=1.0, value=0.2, step=0.1)
+    animation_speed = st.sidebar.slider("Animation Speed (seconds per frame)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
 
     # Sidebar: Vehicle-specific settings
     st.sidebar.header("Vehicle Settings")
