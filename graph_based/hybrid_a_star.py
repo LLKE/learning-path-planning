@@ -4,11 +4,16 @@ from dubins import DubinsPath
 import math
 import pdb
 
+def normalize_angle(angle):
+    """Wrap to [-pi, pi)."""
+    return (angle + math.pi) % (2 * math.pi) - math.pi
+
 def heuristic(node, goal, turning_radius):
-    """Heuristic function using Euclidean distance."""
-    path = DubinsPath(node, goal, turning_radius)
-    result = path.compute_shortest_path()
-    return result["length"] if result else np.inf
+    """Heuristic function using Euclidean distance.
+       A more complex version of this algorithm might use a dubins path heuristic,
+       as the euclidean heuristic does not consider turning constraints.
+    """
+    return np.linalg.norm(np.array(goal[:2]) - np.array(node[:2]))
 
 def is_valid(node, grid):
     x, y, _ = node
@@ -38,7 +43,7 @@ def is_arc_collision_free(x, y, theta, omega, v, delta_t, grid):
         t += dt_sample
     return True
 
-def get_neighbors(node, turning_radius, grid, v=1.0, delta_t=1.0):
+def get_neighbors(node, turning_radius, grid, v=1.5, delta_t=1.0):
 
     x, y, theta = node
     neighbors = []
@@ -109,7 +114,7 @@ def hybrid_a_star(grid, start, goal, turning_radius, steps):
     g_score = {start: 0}
     f_score = {start: heuristic(start, goal, turning_radius)}
     explored = set()
-    #pdb.set_trace()
+
     while open_set:
         _, current = heapq.heappop(open_set)
         if current in explored:
