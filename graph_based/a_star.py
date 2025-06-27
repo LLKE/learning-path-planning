@@ -42,7 +42,7 @@ def a_star(grid, start, goal, steps):
                 g_cost[neighbor] = new_g
                 
                 # Here, heuristic (distance to goal) comes into play
-                heapq.heappush(open_set, (g_cost[neighbor], 12* heuristic(neighbor, goal), neighbor))
+                heapq.heappush(open_set, (g_cost[neighbor], heuristic(neighbor, goal), neighbor))
     
     return None
 

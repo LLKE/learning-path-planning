@@ -89,11 +89,11 @@ def main():
         st.markdown(descriptions[algorithm])
     ax = prepare_ax_for_animation(ax, grid, start, goal)
     if animate_with_orientation:
-        for fig, i in animate_pathfinding_with_orientation(fig, ax, steps, path, animation_speed=animation_speed):
+        for fig, i in animate_pathfinding_with_orientation(fig, ax, steps, grid, path, animation_speed=animation_speed):
             placeholder.pyplot(fig)
             step_counter.markdown(f"**Step {i+1}*")
     else: 
-        for fig, i in animate_pathfinding(fig, ax, steps, path, animation_speed=animation_speed):
+        for fig, i in animate_pathfinding(fig, ax, steps, grid, path, animation_speed=animation_speed):
             placeholder.pyplot(fig)
             step_counter.markdown(f"**Step {i+1}*")
     
