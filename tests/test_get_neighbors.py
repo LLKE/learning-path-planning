@@ -14,15 +14,15 @@ class TestHybridAStar(unittest.TestCase):
     def test_get_neighbors_no_obstacles(self):
         """Test the get_neighbors function with no obstacles."""
         node = (5, 5, 0)  # Starting node at the center of the grid with orientation 0
-        max_turning_angle = 45  # Maximum turning angle in degrees
+        max_turning_radius = 1  # Maximum turning angle in degrees
         v = 1.0  # Constant forward velocity
         delta_t = 1.0  # Time step
 
         # Call the get_neighbors function
-        neighbors = get_neighbors(node, max_turning_angle, v, delta_t)
+        neighbors = get_neighbors(node, max_turning_radius, self.grid_empty, v, delta_t)
 
         # Check that neighbors are generated
-        self.assertEqual(len(neighbors), 3, "No neighbors were generated")
+        self.assertEqual(len(neighbors), 5, "No neighbors were generated")
 
         # Check that all neighbors are within the grid bounds
         for neighbor in neighbors:
